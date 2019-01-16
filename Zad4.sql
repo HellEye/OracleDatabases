@@ -1,4 +1,3 @@
---Zad 47
 --<editor-fold desc="Zad 47">
 --<editor-fold desc="Obiekty">
 
@@ -284,7 +283,7 @@ CONSTRAINT oopl_sc_k kot SCOPE IS OKocury
 );
 
 --<editor-fold desc="Dane Plebsu">
-INSERT ALL  INTO oplebs
+INSERT ALL INTO oplebs
 VALUES (Plebs(1, (SELECT REF(kot) FROM okocury kot WHERE kot.pseudo = 'SZYBKA')))
     INTO oplebs
 VALUES (Plebs(2, (SELECT REF(kot) FROM okocury kot WHERE kot.pseudo = 'BOLEK')))
@@ -308,7 +307,8 @@ VALUES (Plebs(10, (SELECT REF(kot) FROM okocury kot WHERE kot.pseudo = 'UCHO')))
 VALUES (Plebs(11, (SELECT REF(kot) FROM okocury kot WHERE kot.pseudo = 'MALY')))
     INTO oplebs
 VALUES (Plebs(12, (SELECT REF(kot) FROM okocury kot WHERE kot.pseudo = 'MALA')))
-SELECT * FROM dual;
+SELECT *
+FROM dual;
 /*INSERT INTO oplebs
 VALUES (Plebs(1, (SELECT REF(kot) FROM okocury kot WHERE kot.pseudo = 'SZYBKA')));
 INSERT INTO oplebs
@@ -383,23 +383,24 @@ CONSTRAINT ooe_sc_s sluga SCOPE IS OPlebs
 --<editor-fold desc="Dane elity">
 INSERT ALL INTO oelita
 VALUES (Elita(1, (SELECT REF(kot) FROM okocury kot WHERE kot.pseudo = 'TYGRYS'),
-(SELECT REF(sluga) FROM oplebs sluga WHERE sluga.nr_plebsu = 5)))
-INTO oelita
+              (SELECT REF(sluga) FROM oplebs sluga WHERE sluga.nr_plebsu = 5)))
+    INTO oelita
 VALUES (Elita(2, (SELECT REF(kot) FROM okocury kot WHERE kot.pseudo = 'LOLA'),
-(SELECT REF(sluga) FROM oplebs sluga WHERE sluga.nr_plebsu = 9)))
-INTO oelita
+              (SELECT REF(sluga) FROM oplebs sluga WHERE sluga.nr_plebsu = 9)))
+    INTO oelita
 VALUES (Elita(3, (SELECT REF(kot) FROM okocury kot WHERE kot.pseudo = 'ZOMBI'),
-(SELECT REF(sluga) FROM oplebs sluga WHERE sluga.nr_plebsu = 4)))
-INTO oelita
+              (SELECT REF(sluga) FROM oplebs sluga WHERE sluga.nr_plebsu = 4)))
+    INTO oelita
 VALUES (Elita(4, (SELECT REF(kot) FROM okocury kot WHERE kot.pseudo = 'LYSY'),
-(SELECT REF(sluga) FROM oplebs sluga WHERE sluga.nr_plebsu = 1)))
-INTO oelita
+              (SELECT REF(sluga) FROM oplebs sluga WHERE sluga.nr_plebsu = 1)))
+    INTO oelita
 VALUES (Elita(5, (SELECT REF(kot) FROM okocury kot WHERE kot.pseudo = 'KURKA'),
-(SELECT REF(sluga) FROM oplebs sluga WHERE sluga.nr_plebsu = 10)))
-INTO oelita
+              (SELECT REF(sluga) FROM oplebs sluga WHERE sluga.nr_plebsu = 10)))
+    INTO oelita
 VALUES (Elita(6, (SELECT REF(kot) FROM okocury kot WHERE kot.pseudo = 'RAFA'),
-(SELECT REF(sluga) FROM oplebs sluga WHERE sluga.nr_plebsu = 7)))
-SELECT * from dual;
+              (SELECT REF(sluga) FROM oplebs sluga WHERE sluga.nr_plebsu = 7)))
+SELECT *
+FROM dual;
 /*INSERT INTO oelita
 VALUES (Elita(1, (SELECT REF(kot) FROM okocury kot WHERE kot.pseudo = 'TYGRYS'),
               (SELECT REF(sluga) FROM oplebs sluga WHERE sluga.nr_plebsu = 5)));
@@ -465,66 +466,125 @@ CONSTRAINT ookon_du CHECK (data_wprowadzenia <= data_usuniecia
 --<editor-fold desc="Dane kont">
 INSERT ALL INTO okonta
 VALUES (1, (SELECT REF(kot) FROM oelita kot WHERE kot.nr_elity = 1), '2019-01-01', '2019-01-08')
-INTO okonta
+    INTO okonta
 VALUES (2, (SELECT REF(kot) FROM oelita kot WHERE kot.nr_elity = 2), '2019-01-02', '2019-01-05')
-INTO okonta
+    INTO okonta
 VALUES (3, (SELECT REF(kot) FROM oelita kot WHERE kot.nr_elity = 1), '2019-01-03', '2019-01-03')
-INTO okonta
+    INTO okonta
 VALUES (4, (SELECT REF(kot) FROM oelita kot WHERE kot.nr_elity = 3), '2019-01-04', '2019-01-08')
-INTO okonta
+    INTO okonta
 VALUES (5, (SELECT REF(kot) FROM oelita kot WHERE kot.nr_elity = 4), '2019-01-05', NULL)
-INTO okonta
+    INTO okonta
 VALUES (6, (SELECT REF(kot) FROM oelita kot WHERE kot.nr_elity = 5), '2019-01-06', NULL)
-INTO okonta
+    INTO okonta
 VALUES (7, (SELECT REF(kot) FROM oelita kot WHERE kot.nr_elity = 1), '2019-01-07', '2019-01-11')
-INTO okonta
+    INTO okonta
 VALUES (8, (SELECT REF(kot) FROM oelita kot WHERE kot.nr_elity = 2), '2019-01-08', NULL)
-INTO okonta
+    INTO okonta
 VALUES (9, (SELECT REF(kot) FROM oelita kot WHERE kot.nr_elity = 2), '2019-01-09', NULL)
-INTO okonta
+    INTO okonta
 VALUES (10, (SELECT REF(kot) FROM oelita kot WHERE kot.nr_elity = 1), '2019-01-10', '2019-01-13')
-INTO okonta
+    INTO okonta
 VALUES (11, (SELECT REF(kot) FROM oelita kot WHERE kot.nr_elity = 7), '2019-01-11', NULL)
-INTO okonta
+    INTO okonta
 VALUES (12, (SELECT REF(kot) FROM oelita kot WHERE kot.nr_elity = 1), '2019-01-12', NULL)
-INTO okonta
+    INTO okonta
 VALUES (13, (SELECT REF(kot) FROM oelita kot WHERE kot.nr_elity = 3), '2019-01-13', NULL)
-INTO okonta
+    INTO okonta
 VALUES (14, (SELECT REF(kot) FROM oelita kot WHERE kot.nr_elity = 5), '2019-01-14', '2019-01-15')
-SELECT * from dual;
-/*INSERT INTO okonta
-VALUES (1, (SELECT REF(kot) FROM oelita kot WHERE kot.nr_elity = 1), '2019-01-01', '2019-01-08');
-INSERT INTO okonta
-VALUES (2, (SELECT REF(kot) FROM oelita kot WHERE kot.nr_elity = 2), '2019-01-02', '2019-01-05');
-INSERT INTO okonta
-VALUES (3, (SELECT REF(kot) FROM oelita kot WHERE kot.nr_elity = 1), '2019-01-03', '2019-01-03');
-INSERT INTO okonta
-VALUES (4, (SELECT REF(kot) FROM oelita kot WHERE kot.nr_elity = 3), '2019-01-04', '2019-01-08');
-INSERT INTO okonta
-VALUES (5, (SELECT REF(kot) FROM oelita kot WHERE kot.nr_elity = 4), '2019-01-05', NULL);
-INSERT INTO okonta
-VALUES (6, (SELECT REF(kot) FROM oelita kot WHERE kot.nr_elity = 5), '2019-01-06', NULL);
-INSERT INTO okonta
-VALUES (7, (SELECT REF(kot) FROM oelita kot WHERE kot.nr_elity = 1), '2019-01-07', '2019-01-11');
-INSERT INTO okonta
-VALUES (8, (SELECT REF(kot) FROM oelita kot WHERE kot.nr_elity = 2), '2019-01-08', NULL);
-INSERT INTO okonta
-VALUES (9, (SELECT REF(kot) FROM oelita kot WHERE kot.nr_elity = 2), '2019-01-09', NULL);
-INSERT INTO okonta
-VALUES (10, (SELECT REF(kot) FROM oelita kot WHERE kot.nr_elity = 1), '2019-01-10', '2019-01-13');
-INSERT INTO okonta
-VALUES (11, (SELECT REF(kot) FROM oelita kot WHERE kot.nr_elity = 7), '2019-01-11', NULL);
-INSERT INTO okonta
-VALUES (12, (SELECT REF(kot) FROM oelita kot WHERE kot.nr_elity = 1), '2019-01-12', NULL);
-INSERT INTO okonta
-VALUES (13, (SELECT REF(kot) FROM oelita kot WHERE kot.nr_elity = 3), '2019-01-13', NULL);
-INSERT INTO okonta
-VALUES (14, (SELECT REF(kot) FROM oelita kot WHERE kot.nr_elity = 5), '2019-01-14', '2019-01-15');*/
+SELECT *
+FROM dual;
 --</editor-fold>
 
 --</editor-fold>
 
+--<editor-fold desc="Incydenty">
+CREATE OR REPLACE TYPE INCYDENT AS OBJECT (
+    id_incydentu   NUMBER,
+    poszkodowany   REF KOCUR,
+    wrog           VARCHAR2(15),
+    data_incydentu DATE,
+    opis_incydentu VARCHAR2(50),
+
+MAP MEMBER FUNCTION ById
+    RETURN NUMBER,
+MEMBER FUNCTION getWroga
+    RETURN VARCHAR2,
+MEMBER FUNCTION getKot
+    RETURN KOCUR,
+MEMBER FUNCTION zdarzylSiePo(data DATE)
+    RETURN NUMBER,
+MEMBER FUNCTION getStopienWroga
+    RETURN NUMBER
+);
+CREATE OR REPLACE TYPE BODY INCYDENT IS
+    MAP MEMBER FUNCTION ById
+        RETURN NUMBER IS BEGIN
+        RETURN id_incydentu;
+    END;
+    MEMBER FUNCTION getWroga
+        RETURN VARCHAR2 IS
+        gat VARCHAR2(15);
+        BEGIN
+            SELECT gatunek INTO gat FROM wrogowie WHERE imie_wroga = wrog;
+            RETURN wrog || ' (' || gat || ')';
+        END;
+    MEMBER FUNCTION GetKot
+        RETURN KOCUR IS
+        k KOCUR;
+        BEGIN
+            SELECT DEREF(poszkodowany) INTO k FROM dual;
+            RETURN k;
+        END;
+    MEMBER FUNCTION zdarzylSiePo(data DATE)
+        RETURN NUMBER IS
+        BEGIN
+            IF data < data_incydentu THEN RETURN 1;
+            END IF;
+            RETURN 0;
+        END;
+    MEMBER FUNCTION getStopienWroga
+        RETURN NUMBER IS
+        st NUMBER;
+        BEGIN
+            SELECT stopien_wrogosci INTO st FROM wrogowie WHERE imie_wroga = wrog;
+            RETURN st;
+        END;
+END;
+
+CREATE TABLE oincydenty OF INCYDENT (
+CONSTRAINT ooi_pk PRIMARY KEY (id_incydentu
+),
+CONSTRAINT ooi_n_wr CHECK (wrog IS NOT NULL
+),
+CONSTRAINT ooi_sc_p poszkodowany SCOPE IS okocury
+);
+
+--<editor-fold desc="Dane incydentów">
+INSERT ALL
+    INTO oIncydenty VALUES (1,(SELECT REF(k) FROM oKocury k WHERE k.pseudo='TYGRYS'), 'KAZIO', '2004-10-13 ', 'USILOWAL NABIC NA WIDLY')
+    INTO oIncydenty VALUES (2,(SELECT REF(k) FROM oKocury k WHERE k.pseudo='ZOMBI'), 'SWAWOLNY DYZIO', '2005-03-07 ', 'WYBIL OKO Z PROCY')
+    INTO oIncydenty VALUES (3,(SELECT REF(k) FROM oKocury k WHERE k.pseudo='BOLEK'), 'KAZIO', '2005-03-29 ', 'POSZCZUL BURKIEM')
+    INTO oIncydenty VALUES (4,(SELECT REF(k) FROM oKocury k WHERE k.pseudo='SZYBKA'), 'GLUPIA ZOSKA', '2006-09-12 ', 'UZYLA KOTA JAKO SCIERKI')
+    INTO oIncydenty VALUES (5,(SELECT REF(k) FROM oKocury k WHERE k.pseudo='MALA'), 'CHYTRUSEK', '2007-03-07 ', 'ZALECAL SIE')
+    INTO oIncydenty VALUES (6,(SELECT REF(k) FROM oKocury k WHERE k.pseudo='TYGRYS'), 'DZIKI BILL', '2007-06-12 ', 'USILOWAL POZBAWIC ZYCIA')
+    INTO oIncydenty VALUES (7,(SELECT REF(k) FROM oKocury k WHERE k.pseudo='BOLEK'), 'DZIKI BILL', '2007-11-10 ', 'ODGRYZL UCHO')
+    INTO oIncydenty VALUES (8,(SELECT REF(k) FROM oKocury k WHERE k.pseudo='LASKA'), 'DZIKI BILL', '2008-12-12 ', 'POGRYZL ZE LEDWO SIE WYLIZALA')
+    INTO oIncydenty VALUES (9,(SELECT REF(k) FROM oKocury k WHERE k.pseudo='LASKA'), 'KAZIO', '2009-01-07 ', 'ZLAPAL ZA OGON I ZROBIL WIATRAK')
+    INTO oIncydenty VALUES (10,(SELECT REF(k) FROM oKocury k WHERE k.pseudo='DAMA'), 'KAZIO', '2009-02-07 ', 'CHCIAL OBEDRZEC ZE SKORY')
+    INTO oIncydenty VALUES (11,(SELECT REF(k) FROM oKocury k WHERE k.pseudo='MAN'), 'REKSIO', '2009-04-14 ', 'WYJATKOWO NIEGRZECZNIE OBSZCZEKAL')
+    INTO oIncydenty VALUES (12,(SELECT REF(k) FROM oKocury k WHERE k.pseudo='LYSY'), 'BETHOVEN', '2009-05-11 ', 'NIE PODZIELIL SIE SWOJA KASZA')
+    INTO oIncydenty VALUES (13,(SELECT REF(k) FROM oKocury k WHERE k.pseudo='RURA'), 'DZIKI BILL', '2009-09-03 ', 'ODGRYZL OGON')
+    INTO oIncydenty VALUES (14,(SELECT REF(k) FROM oKocury k WHERE k.pseudo='PLACEK'), 'BAZYLI', '2010-07-12 ', 'DZIOBIAC UNIEMOZLIWIL PODEBRANIE KURCZAKA')
+    INTO oIncydenty VALUES (15,(SELECT REF(k) FROM oKocury k WHERE k.pseudo='PUSZYSTA'), 'SMUKLA', '2010-11-19 ', 'OBRZUCILA SZYSZKAMI')
+    INTO oIncydenty VALUES (16,(SELECT REF(k) FROM oKocury k WHERE k.pseudo='KURKA'), 'BUREK', '2010-12-14 ', 'POGONIL')
+    INTO oIncydenty VALUES (17,(SELECT REF(k) FROM oKocury k WHERE k.pseudo='MALY'), 'CHYTRUSEK', '2011-07-13 ', 'PODEBRAL PODEBRANE JAJKA')
+    INTO oIncydenty VALUES (18,(SELECT REF(k) FROM oKocury k WHERE k.pseudo='UCHO'), 'SWAWOLNY DYZIO', '2011-07-14 ', 'OBRZUCIL KAMIENIAMI')
+SELECT * FROM dual;
 --</editor-fold>
+--</editor-fold>
+--</editor-fold>
+
 
 --<editor-fold desc="Zad 17">
 SELECT k.getDisplayName() "kot", k.zjadarazem() "spozycie", k.getnazwabandy() "banda"
@@ -535,9 +595,12 @@ WHERE k.GetTeren() IN ('POLE', 'CALOSC');
 --<editor-fold desc="Zad 23">
 SELECT k.getDisplayName() "kot", k.getSpozycie() "zjada rocznie"
 FROM okocury k
-WHERE k.maPremie()=1
+WHERE k.maPremie() = 1
 ORDER BY k.zjadaRazem() DESC;
 
 --</editor-fold>
 --</editor-fold>
 
+--<editor-fold desc="Zad 48">
+
+--</editor-fold>
