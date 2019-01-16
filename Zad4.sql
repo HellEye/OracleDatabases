@@ -434,7 +434,7 @@ MAP MEMBER FUNCTION ById
 MEMBER FUNCTION GetWlasciciel
     RETURN KOCUR,
 MEMBER FUNCTION IsOn
-    RETURN BOOLEAN
+    RETURN NUMBER
 );
 CREATE OR REPLACE TYPE BODY KONTO IS
     MAP MEMBER FUNCTION ById
@@ -449,8 +449,11 @@ CREATE OR REPLACE TYPE BODY KONTO IS
             RETURN k;
         END;
     MEMBER FUNCTION isOn
-        RETURN BOOLEAN IS BEGIN
-        RETURN data_usuniecia IS NOT NULL;
+        RETURN NUMBER IS BEGIN
+        IF data_usuniecia IS NOT NULL THEN
+        RETURN 1;
+            END IF;
+        RETURN 0;
     END;
 END;
 CREATE TABLE okonta OF KONTO (
@@ -584,8 +587,20 @@ SELECT * FROM dual;
 --</editor-fold>
 --</editor-fold>
 --</editor-fold>
-
-
+--<editor-fold desc="przykłady zapytan">
+--Obecna ilość myszy na koncie
+SELECT k.getWlasciciel().getDisplayName() "kot",
+       COUNT(*) "Ilosc myszy"
+FROM okonta k
+WHERE k.isOn()=1
+GROUP BY k.getWlasciciel();
+--plebsy które nie są sługami
+SELECT p.getkocur().getDisplayName() "szczesliwy plebs"
+FROM oplebs p
+WHERE p.getKocur() NOT IN (
+    SELECT e.getSluga() FROM oelita e
+    );
+--</editor-fold>
 --<editor-fold desc="Zad 17">
 SELECT k.getDisplayName() "kot", k.zjadarazem() "spozycie", k.getnazwabandy() "banda"
 FROM okocury k
@@ -601,6 +616,28 @@ ORDER BY k.zjadaRazem() DESC;
 --</editor-fold>
 --</editor-fold>
 
---<editor-fold desc="Zad 48">
+CREATE TABLE plebs (
+    pseudo VARCHAR2(15),
+    
+CONSTRAINT oopl_pk PRIMARY KEY (nr_plebsu
+),
+CONSTRAINT oopl_sc_k kot SCOPE IS OKocury
+);
 
+CREATE TABLE elita (
+CONSTRAINT ooe_pk PRIMARY KEY (nr_elity
+),
+CONSTRAINT ooe_sc_k kot SCOPE IS OKocury,
+CONSTRAINT ooe_sc_s sluga SCOPE IS OPlebs
+);
+
+CREATE TABLE konta (
+CONSTRAINT ookon_pk PRIMARY KEY (id_konta
+),
+CONSTRAINT ookon_sc_w wlasciciel SCOPE IS Oelita,
+CONSTRAINT ookon_dw CHECK (data_wprowadzenia IS NOT NULL
+),
+CONSTRAINT ookon_du CHECK (data_wprowadzenia <= data_usuniecia
+)
+);
 --</editor-fold>
