@@ -1,9 +1,19 @@
 --Zad 47
 --<editor-fold desc="Zad 47">
+--<editor-fold desc="Obiekty">
+
+DROP TABLE okonta;
+DROP TABLE oelita;
+DROP TABLE oplebs;
+DROP TABLE okocury;
+
+
+DROP TYPE KONTO;
+DROP TYPE ELITA;
+DROP TYPE PLEBS;
+DROP TYPE KOCUR;
 --<editor-fold desc="Kocury">
 
-
-DROP TYPE KOCUR;
 
 CREATE OR REPLACE TYPE KOCUR AS OBJECT (
     imie            VARCHAR2(15),
@@ -22,18 +32,20 @@ MEMBER FUNCTION ZjadaRazem
     RETURN NUMBER,
 MEMBER FUNCTION GetDisplayName
     RETURN VARCHAR2,
-MEMBER FUNCTION HasSzef
-    RETURN BOOLEAN,
-MEMBER FUNCTION JoinedBefore(inny KOCUR)
-    RETURN BOOLEAN,
-MEMBER FUNCTION IleMiesiecyWStadku
+MEMBER FUNCTION MaSzefa
     RETURN NUMBER,
 MEMBER FUNCTION GetMinMyszy
     RETURN NUMBER,
 MEMBER FUNCTION GetMaxMyszy
     RETURN NUMBER,
 MEMBER FUNCTION GetNazwaBandy
-    RETURN VARCHAR2
+    RETURN VARCHAR2,
+MEMBER FUNCTION GetTeren
+    RETURN VARCHAR2,
+MEMBER FUNCTION GetSpozycie
+    RETURN VARCHAR2,
+MEMBER FUNCTION MaPremie
+    RETURN NUMBER
 );
 
 CREATE OR REPLACE TYPE BODY KOCUR IS
@@ -44,7 +56,7 @@ CREATE OR REPLACE TYPE BODY KOCUR IS
     
     MEMBER FUNCTION ZjadaRazem
         RETURN NUMBER IS BEGIN
-        RETURN NVL(przydzial_myszy, 0) + NVL(myszy_extra, 0);
+        RETURN przydzial_myszy + NVL(myszy_extra, 0);
     END;
     
     MEMBER FUNCTION GetDisplayName
@@ -52,23 +64,11 @@ CREATE OR REPLACE TYPE BODY KOCUR IS
         RETURN imie || ' (' || pseudo || ')';
     END;
     
-    MEMBER FUNCTION HasSzef
-        RETURN BOOLEAN IS BEGIN
-        RETURN szef IS NOT NULL;
+    MEMBER FUNCTION MaSzefa
+        RETURN NUMBER IS BEGIN
+        IF szef IS NOT NULL THEN RETURN 1; END IF;
+        RETURN 0;
     END;
-    
-    MEMBER FUNCTION JoinedBefore(inny KOCUR)
-        RETURN BOOLEAN IS BEGIN
-        RETURN w_stadku_od < inny.w_stadku_od;
-    END;
-    
-    MEMBER FUNCTION IleMiesiecyWStadku
-        RETURN NUMBER IS
-        tmp NUMBER;
-        BEGIN
-            SELECT EXTRACT(MONTH FROM w_stadku_od) INTO tmp FROM dual;
-            RETURN tmp;
-        END;
     
     MEMBER FUNCTION GetMinMyszy
         RETURN NUMBER IS
@@ -89,11 +89,34 @@ CREATE OR REPLACE TYPE BODY KOCUR IS
     
     MEMBER FUNCTION GetNazwaBandy
         RETURN VARCHAR2 IS
-        tmp VARCHAR2(20);
+        tmp bandy.nazwa%TYPE;
         BEGIN
             SELECT bandy.nazwa INTO tmp FROM bandy WHERE nr_bandy = banda_nr;
             RETURN tmp;
         END;
+    
+    MEMBER FUNCTION GetTeren
+        RETURN VARCHAR2 IS
+        t bandy.teren%TYPE;
+        BEGIN
+            SELECT teren INTO t FROM bandy WHERE nr_bandy = banda_nr;
+            RETURN t;
+        END;
+    
+    MEMBER FUNCTION GetSpozycie
+        RETURN VARCHAR2 IS BEGIN
+        IF ZjadaRazem() * 12 < 864 THEN RETURN 'ponizej 864';
+        ELSIF ZjadaRazem() * 12 > 864 THEN RETURN 'powyzej 864';
+        ELSE RETURN '864';
+        END IF;
+    END;
+    MEMBER FUNCTION MaPremie
+        RETURN NUMBER IS BEGIN
+        IF myszy_extra IS NOT NULL THEN
+            RETURN 1;
+        END IF;
+        RETURN 0;
+    END;
 END;
 
 CREATE TABLE okocury OF KOCUR (
@@ -114,7 +137,63 @@ CONSTRAINT ook_sz_ref szef SCOPE IS OKocury
 --<editor-fold desc="Dane Kocurow">
 INSERT INTO okocury
 VALUES (Kocur('MRUCZEK', 'M', 'TYGRYS', 'SZEFUNIO', NULL, '2002-01-01', 103, 33, 1));
+INSERT ALL INTO okocury
+VALUES (Kocur('RUDA', 'D', 'MALA', 'MILUSIA', (SELECT REF(kocur) FROM okocury kocur WHERE kocur.pseudo = 'TYGRYS'),
+              '2006-09-17', 22, 42, 1))
+    INTO okocury
+VALUES (Kocur('PUCEK', 'M', 'RAFA', 'LOWCZY', (SELECT REF(kocur) FROM okocury kocur WHERE kocur.pseudo = 'TYGRYS'),
+              '2006-10-15', 65, NULL, 4))
+    INTO okocury
+VALUES (Kocur('MICKA', 'D', 'LOLA', 'MILUSIA', (SELECT REF(kocur) FROM okocury kocur WHERE kocur.pseudo = 'TYGRYS'),
+              '2009-10-14', 25, 47, 1))
+    INTO okocury
+VALUES (Kocur('CHYTRY', 'M', 'BOLEK', 'DZIELCZY', (SELECT REF(kocur) FROM okocury kocur WHERE kocur.pseudo = 'TYGRYS'),
+              '2002-05-05', 50, NULL, 1))
+    INTO okocury
+VALUES (Kocur('KOREK', 'M', 'ZOMBI', 'BANDZIOR', (SELECT REF(kocur) FROM okocury kocur WHERE kocur.pseudo = 'TYGRYS'),
+              '2004-03-16', 75, 13, 3))
+    INTO okocury
+VALUES (Kocur('BOLEK', 'M', 'LYSY', 'BANDZIOR', (SELECT REF(kocur) FROM okocury kocur WHERE kocur.pseudo = 'TYGRYS'),
+              '2006-08-15', 72, 21, 2))
+SELECT *
+FROM dual;
+INSERT ALL INTO okocury
+VALUES (Kocur('JACEK', 'M', 'PLACEK', 'LOWCZY', (SELECT REF(kocur) FROM okocury kocur WHERE kocur.pseudo = 'LYSY'),
+              '2008-12-01', 67, NULL, 2))
+    INTO okocury
+VALUES (Kocur('BARI', 'M', 'RURA', 'LAPACZ', (SELECT REF(kocur) FROM okocury kocur WHERE kocur.pseudo = 'LYSY'),
+              '2009-09-01', 56, NULL, 2))
+    INTO okocury
+VALUES (Kocur('SONIA', 'D', 'PUSZYSTA', 'MILUSIA', (SELECT REF(kocur) FROM okocury kocur WHERE kocur.pseudo = 'ZOMBI'),
+              '2010-11-18', 20, 35, 3))
+    INTO okocury
+VALUES (Kocur('LATKA', 'D', 'UCHO', 'KOT', (SELECT REF(kocur) FROM okocury kocur WHERE kocur.pseudo = 'RAFA'),
+              '2011-01-01', 40, NULL, 4))
+    INTO okocury
+VALUES (Kocur('DUDEK', 'M', 'MALY', 'KOT', (SELECT REF(kocur) FROM okocury kocur WHERE kocur.pseudo = 'RAFA'),
+              '2011-05-15', 40, NULL, 4))
+    INTO okocury
+VALUES (Kocur('ZUZIA', 'D', 'SZYBKA', 'LOWCZY', (SELECT REF(kocur) FROM okocury kocur WHERE kocur.pseudo = 'LYSY'),
+              '2006-07-21', 65, NULL, 2))
+    INTO okocury
+VALUES (Kocur('PUNIA', 'D', 'KURKA', 'LOWCZY', (SELECT REF(kocur) FROM okocury kocur WHERE kocur.pseudo = 'ZOMBI'),
+              '2008-01-01', 61, NULL, 3))
+    INTO okocury
+VALUES (Kocur('BELA', 'D', 'LASKA', 'MILUSIA', (SELECT REF(kocur) FROM okocury kocur WHERE kocur.pseudo = 'LYSY'),
+              '2008-02-01', 24, 28, 2))
+    INTO okocury
+VALUES (Kocur('KSAWERY', 'M', 'MAN', 'LAPACZ', (SELECT REF(kocur) FROM okocury kocur WHERE kocur.pseudo = 'RAFA'),
+              '2008-07-12', 51, NULL, 4))
+    INTO okocury
+VALUES (Kocur('MELA', 'D', 'DAMA', 'LAPACZ', (SELECT REF(kocur) FROM okocury kocur WHERE kocur.pseudo = 'RAFA'),
+              '2008-11-01', 51, NULL, 4))
+SELECT *
+FROM dual;
 INSERT INTO okocury
+VALUES (Kocur('LUCEK', 'M', 'ZERO', 'KOT', (SELECT REF(kocur) FROM okocury kocur WHERE kocur.pseudo = 'KURKA'),
+              '2010-03-01', 43, NULL, 3));
+
+/*INSERT INTO okocury
 VALUES (Kocur('RUDA', 'D', 'MALA', 'MILUSIA', (SELECT REF(kocur) FROM okocury kocur WHERE kocur.pseudo = 'TYGRYS'),
               '2006-09-17', 22, 42, 1));
 INSERT INTO okocury
@@ -164,11 +243,11 @@ VALUES (Kocur('MELA', 'D', 'DAMA', 'LAPACZ', (SELECT REF(kocur) FROM okocury koc
               '2008-11-01', 51, NULL, 4));
 INSERT INTO okocury
 VALUES (Kocur('LUCEK', 'M', 'ZERO', 'KOT', (SELECT REF(kocur) FROM okocury kocur WHERE kocur.pseudo = 'KURKA'),
-              '2010-03-01', 43, NULL, 3));
+              '2010-03-01', 43, NULL, 3));*/
 --</editor-fold>
-SELECT kocur.szef.pseudo
+/*SELECT kocur.szef.pseudo
 FROM okocury kocur
-ORDER BY kocur.szef.pseudo;
+ORDER BY kocur.szef.pseudo;*/
 --</editor-fold>
 
 --<editor-fold desc="PLEBS">
@@ -183,19 +262,19 @@ MEMBER FUNCTION GetKocur
 CREATE OR REPLACE TYPE BODY PLEBS IS
     MAP MEMBER FUNCTION ByPseudo
         RETURN VARCHAR2 IS
-        k kocur;
+        k KOCUR;
         BEGIN
-            SELECT deref(kot) into k from dual;
-        RETURN k.pseudo;
-    END;
+            SELECT deref(kot) INTO k FROM dual;
+            RETURN k.pseudo;
+        END;
     
     MEMBER FUNCTION GetKocur
         RETURN KOCUR IS
-        k kocur;
+        k KOCUR;
         BEGIN
-            SELECT deref(kot) into k from dual;
-        RETURN k;
-    END;
+            SELECT deref(kot) INTO k FROM dual;
+            RETURN k;
+        END;
 END;
 
 CREATE TABLE oplebs OF PLEBS (
@@ -205,7 +284,32 @@ CONSTRAINT oopl_sc_k kot SCOPE IS OKocury
 );
 
 --<editor-fold desc="Dane Plebsu">
-INSERT INTO oplebs
+INSERT ALL  INTO oplebs
+VALUES (Plebs(1, (SELECT REF(kot) FROM okocury kot WHERE kot.pseudo = 'SZYBKA')))
+    INTO oplebs
+VALUES (Plebs(2, (SELECT REF(kot) FROM okocury kot WHERE kot.pseudo = 'BOLEK')))
+    INTO oplebs
+VALUES (Plebs(3, (SELECT REF(kot) FROM okocury kot WHERE kot.pseudo = 'LASKA')))
+    INTO oplebs
+VALUES (Plebs(4, (SELECT REF(kot) FROM okocury kot WHERE kot.pseudo = 'MAN')))
+    INTO oplebs
+VALUES (Plebs(5, (SELECT REF(kot) FROM okocury kot WHERE kot.pseudo = 'DAMA')))
+    INTO oplebs
+VALUES (Plebs(6, (SELECT REF(kot) FROM okocury kot WHERE kot.pseudo = 'PLACEK')))
+    INTO oplebs
+VALUES (Plebs(7, (SELECT REF(kot) FROM okocury kot WHERE kot.pseudo = 'RURA')))
+    INTO oplebs
+VALUES (Plebs(8, (SELECT REF(kot) FROM okocury kot WHERE kot.pseudo = 'ZERO')))
+    INTO oplebs
+VALUES (Plebs(9, (SELECT REF(kot) FROM okocury kot WHERE kot.pseudo = 'PUSZYSTA')))
+    INTO oplebs
+VALUES (Plebs(10, (SELECT REF(kot) FROM okocury kot WHERE kot.pseudo = 'UCHO')))
+    INTO oplebs
+VALUES (Plebs(11, (SELECT REF(kot) FROM okocury kot WHERE kot.pseudo = 'MALY')))
+    INTO oplebs
+VALUES (Plebs(12, (SELECT REF(kot) FROM okocury kot WHERE kot.pseudo = 'MALA')))
+SELECT * FROM dual;
+/*INSERT INTO oplebs
 VALUES (Plebs(1, (SELECT REF(kot) FROM okocury kot WHERE kot.pseudo = 'SZYBKA')));
 INSERT INTO oplebs
 VALUES (Plebs(2, (SELECT REF(kot) FROM okocury kot WHERE kot.pseudo = 'BOLEK')));
@@ -228,7 +332,7 @@ VALUES (Plebs(10, (SELECT REF(kot) FROM okocury kot WHERE kot.pseudo = 'UCHO')))
 INSERT INTO oplebs
 VALUES (Plebs(11, (SELECT REF(kot) FROM okocury kot WHERE kot.pseudo = 'MALY')));
 INSERT INTO oplebs
-VALUES (Plebs(12, (SELECT REF(kot) FROM okocury kot WHERE kot.pseudo = 'MALA')));
+VALUES (Plebs(12, (SELECT REF(kot) FROM okocury kot WHERE kot.pseudo = 'MALA')));*/
 --</editor-fold>
 
 --</editor-fold>
@@ -248,43 +352,192 @@ MEMBER FUNCTION GetSluga
 CREATE OR REPLACE TYPE BODY ELITA IS
     MAP MEMBER FUNCTION ByPseudo
         RETURN VARCHAR2 IS
-        k Kocur;
+        k KOCUR;
         BEGIN
-            SELECT deref(kot) into k from dual;
-        RETURN k.pseudo;
-    END;
+            SELECT deref(kot) INTO k FROM dual;
+            RETURN k.pseudo;
+        END;
     MEMBER FUNCTION GetSluga
         RETURN KOCUR IS
-        p plebs;
-        k kocur;
+        k KOCUR;
         BEGIN
-            SELECT deref(sluga) into p from dual;
-            SELECT deref(p.kot) into k from dual;
-        RETURN k;
-    END;
+            SELECT deref(deref(sluga).kot) INTO k FROM dual;
+            RETURN k;
+        END;
     MEMBER FUNCTION GetKot
         RETURN KOCUR IS
-        k kocur;
+        k KOCUR;
         BEGIN
-            SELECT deref(kot) into k from dual;
-        RETURN k;
-    END;
+            SELECT deref(kot) INTO k FROM dual;
+            RETURN k;
+        END;
 END;
 
-CREATE TABLE OElita OF elita (
-    CONSTRAINT ooe_pk PRIMARY KEY (nr_elity),
-    CONSTRAINT ooe_sc_k kot SCOPE IS OKocury,
-    CONSTRAINT ooe_sc_s sluga SCOPE IS OPlebs
+CREATE TABLE oelita OF ELITA (
+CONSTRAINT ooe_pk PRIMARY KEY (nr_elity
+),
+CONSTRAINT ooe_sc_k kot SCOPE IS OKocury,
+CONSTRAINT ooe_sc_s sluga SCOPE IS OPlebs
 );
 
---<editor-fold desc="Dane plebsu">
-INSERT INTO OElita VALUES (Elita(1, (SELECT REF(kot) FROM OKocury kot WHERE kot.pseudo='TYGRYS'), (SELECT REF(sluga) FROM OPlebs sluga WHERE sluga.nr_plebsu=5)));
-INSERT INTO OElita VALUES (Elita(2, (SELECT REF(kot) FROM OKocury kot WHERE kot.pseudo='LOLA'), (SELECT REF(sluga) FROM OPlebs sluga WHERE sluga.nr_plebsu=9)));
-INSERT INTO OElita VALUES (Elita(3, (SELECT REF(kot) FROM OKocury kot WHERE kot.pseudo='ZOMBI'), (SELECT REF(sluga) FROM OPlebs sluga WHERE sluga.nr_plebsu=4)));
-INSERT INTO OElita VALUES (Elita(4, (SELECT REF(kot) FROM OKocury kot WHERE kot.pseudo='LYSY'), (SELECT REF(sluga) FROM OPlebs sluga WHERE sluga.nr_plebsu=1)));
-INSERT INTO OElita VALUES (Elita(5, (SELECT REF(kot) FROM OKocury kot WHERE kot.pseudo='KURKA'), (SELECT REF(sluga) FROM OPlebs sluga WHERE sluga.nr_plebsu=10)));
-INSERT INTO OElita VALUES (Elita(6, (SELECT REF(kot) FROM OKocury kot WHERE kot.pseudo='RAFA'), (SELECT REF(sluga) FROM OPlebs sluga WHERE sluga.nr_plebsu=7)));
+--<editor-fold desc="Dane elity">
+INSERT ALL INTO oelita
+VALUES (Elita(1, (SELECT REF(kot) FROM okocury kot WHERE kot.pseudo = 'TYGRYS'),
+(SELECT REF(sluga) FROM oplebs sluga WHERE sluga.nr_plebsu = 5)))
+INTO oelita
+VALUES (Elita(2, (SELECT REF(kot) FROM okocury kot WHERE kot.pseudo = 'LOLA'),
+(SELECT REF(sluga) FROM oplebs sluga WHERE sluga.nr_plebsu = 9)))
+INTO oelita
+VALUES (Elita(3, (SELECT REF(kot) FROM okocury kot WHERE kot.pseudo = 'ZOMBI'),
+(SELECT REF(sluga) FROM oplebs sluga WHERE sluga.nr_plebsu = 4)))
+INTO oelita
+VALUES (Elita(4, (SELECT REF(kot) FROM okocury kot WHERE kot.pseudo = 'LYSY'),
+(SELECT REF(sluga) FROM oplebs sluga WHERE sluga.nr_plebsu = 1)))
+INTO oelita
+VALUES (Elita(5, (SELECT REF(kot) FROM okocury kot WHERE kot.pseudo = 'KURKA'),
+(SELECT REF(sluga) FROM oplebs sluga WHERE sluga.nr_plebsu = 10)))
+INTO oelita
+VALUES (Elita(6, (SELECT REF(kot) FROM okocury kot WHERE kot.pseudo = 'RAFA'),
+(SELECT REF(sluga) FROM oplebs sluga WHERE sluga.nr_plebsu = 7)))
+SELECT * from dual;
+/*INSERT INTO oelita
+VALUES (Elita(1, (SELECT REF(kot) FROM okocury kot WHERE kot.pseudo = 'TYGRYS'),
+              (SELECT REF(sluga) FROM oplebs sluga WHERE sluga.nr_plebsu = 5)));
+INSERT INTO oelita
+VALUES (Elita(2, (SELECT REF(kot) FROM okocury kot WHERE kot.pseudo = 'LOLA'),
+              (SELECT REF(sluga) FROM oplebs sluga WHERE sluga.nr_plebsu = 9)));
+INSERT INTO oelita
+VALUES (Elita(3, (SELECT REF(kot) FROM okocury kot WHERE kot.pseudo = 'ZOMBI'),
+              (SELECT REF(sluga) FROM oplebs sluga WHERE sluga.nr_plebsu = 4)));
+INSERT INTO oelita
+VALUES (Elita(4, (SELECT REF(kot) FROM okocury kot WHERE kot.pseudo = 'LYSY'),
+              (SELECT REF(sluga) FROM oplebs sluga WHERE sluga.nr_plebsu = 1)));
+INSERT INTO oelita
+VALUES (Elita(5, (SELECT REF(kot) FROM okocury kot WHERE kot.pseudo = 'KURKA'),
+              (SELECT REF(sluga) FROM oplebs sluga WHERE sluga.nr_plebsu = 10)));
+INSERT INTO oelita
+VALUES (Elita(6, (SELECT REF(kot) FROM okocury kot WHERE kot.pseudo = 'RAFA'),
+              (SELECT REF(sluga) FROM oplebs sluga WHERE sluga.nr_plebsu = 7)));*/
 --</editor-fold>
-SELECT nr_elity, e.getkot(), e.getsluga() from oelita e;
+
+--</editor-fold>
+
+--<editor-fold desc="Konta">
+CREATE OR REPLACE TYPE KONTO AS OBJECT (
+    id_konta          NUMBER,
+    wlasciciel        REF ELITA,
+    data_wprowadzenia DATE,
+    data_usuniecia    DATE,
+MAP MEMBER FUNCTION ById
+    RETURN NUMBER,
+MEMBER FUNCTION GetWlasciciel
+    RETURN KOCUR,
+MEMBER FUNCTION IsOn
+    RETURN BOOLEAN
+);
+CREATE OR REPLACE TYPE BODY KONTO IS
+    MAP MEMBER FUNCTION ById
+        RETURN NUMBER IS BEGIN
+        RETURN id_konta;
+    END;
+    MEMBER FUNCTION GetWlasciciel
+        RETURN KOCUR IS
+        k KOCUR;
+        BEGIN
+            SELECT deref(deref(wlasciciel).kot) INTO k FROM dual;
+            RETURN k;
+        END;
+    MEMBER FUNCTION isOn
+        RETURN BOOLEAN IS BEGIN
+        RETURN data_usuniecia IS NOT NULL;
+    END;
+END;
+CREATE TABLE okonta OF KONTO (
+CONSTRAINT ookon_pk PRIMARY KEY (id_konta
+),
+CONSTRAINT ookon_sc_w wlasciciel SCOPE IS Oelita,
+CONSTRAINT ookon_dw CHECK (data_wprowadzenia IS NOT NULL
+),
+CONSTRAINT ookon_du CHECK (data_wprowadzenia <= data_usuniecia
+)
+);
+
+--<editor-fold desc="Dane kont">
+INSERT ALL INTO okonta
+VALUES (1, (SELECT REF(kot) FROM oelita kot WHERE kot.nr_elity = 1), '2019-01-01', '2019-01-08')
+INTO okonta
+VALUES (2, (SELECT REF(kot) FROM oelita kot WHERE kot.nr_elity = 2), '2019-01-02', '2019-01-05')
+INTO okonta
+VALUES (3, (SELECT REF(kot) FROM oelita kot WHERE kot.nr_elity = 1), '2019-01-03', '2019-01-03')
+INTO okonta
+VALUES (4, (SELECT REF(kot) FROM oelita kot WHERE kot.nr_elity = 3), '2019-01-04', '2019-01-08')
+INTO okonta
+VALUES (5, (SELECT REF(kot) FROM oelita kot WHERE kot.nr_elity = 4), '2019-01-05', NULL)
+INTO okonta
+VALUES (6, (SELECT REF(kot) FROM oelita kot WHERE kot.nr_elity = 5), '2019-01-06', NULL)
+INTO okonta
+VALUES (7, (SELECT REF(kot) FROM oelita kot WHERE kot.nr_elity = 1), '2019-01-07', '2019-01-11')
+INTO okonta
+VALUES (8, (SELECT REF(kot) FROM oelita kot WHERE kot.nr_elity = 2), '2019-01-08', NULL)
+INTO okonta
+VALUES (9, (SELECT REF(kot) FROM oelita kot WHERE kot.nr_elity = 2), '2019-01-09', NULL)
+INTO okonta
+VALUES (10, (SELECT REF(kot) FROM oelita kot WHERE kot.nr_elity = 1), '2019-01-10', '2019-01-13')
+INTO okonta
+VALUES (11, (SELECT REF(kot) FROM oelita kot WHERE kot.nr_elity = 7), '2019-01-11', NULL)
+INTO okonta
+VALUES (12, (SELECT REF(kot) FROM oelita kot WHERE kot.nr_elity = 1), '2019-01-12', NULL)
+INTO okonta
+VALUES (13, (SELECT REF(kot) FROM oelita kot WHERE kot.nr_elity = 3), '2019-01-13', NULL)
+INTO okonta
+VALUES (14, (SELECT REF(kot) FROM oelita kot WHERE kot.nr_elity = 5), '2019-01-14', '2019-01-15')
+SELECT * from dual;
+/*INSERT INTO okonta
+VALUES (1, (SELECT REF(kot) FROM oelita kot WHERE kot.nr_elity = 1), '2019-01-01', '2019-01-08');
+INSERT INTO okonta
+VALUES (2, (SELECT REF(kot) FROM oelita kot WHERE kot.nr_elity = 2), '2019-01-02', '2019-01-05');
+INSERT INTO okonta
+VALUES (3, (SELECT REF(kot) FROM oelita kot WHERE kot.nr_elity = 1), '2019-01-03', '2019-01-03');
+INSERT INTO okonta
+VALUES (4, (SELECT REF(kot) FROM oelita kot WHERE kot.nr_elity = 3), '2019-01-04', '2019-01-08');
+INSERT INTO okonta
+VALUES (5, (SELECT REF(kot) FROM oelita kot WHERE kot.nr_elity = 4), '2019-01-05', NULL);
+INSERT INTO okonta
+VALUES (6, (SELECT REF(kot) FROM oelita kot WHERE kot.nr_elity = 5), '2019-01-06', NULL);
+INSERT INTO okonta
+VALUES (7, (SELECT REF(kot) FROM oelita kot WHERE kot.nr_elity = 1), '2019-01-07', '2019-01-11');
+INSERT INTO okonta
+VALUES (8, (SELECT REF(kot) FROM oelita kot WHERE kot.nr_elity = 2), '2019-01-08', NULL);
+INSERT INTO okonta
+VALUES (9, (SELECT REF(kot) FROM oelita kot WHERE kot.nr_elity = 2), '2019-01-09', NULL);
+INSERT INTO okonta
+VALUES (10, (SELECT REF(kot) FROM oelita kot WHERE kot.nr_elity = 1), '2019-01-10', '2019-01-13');
+INSERT INTO okonta
+VALUES (11, (SELECT REF(kot) FROM oelita kot WHERE kot.nr_elity = 7), '2019-01-11', NULL);
+INSERT INTO okonta
+VALUES (12, (SELECT REF(kot) FROM oelita kot WHERE kot.nr_elity = 1), '2019-01-12', NULL);
+INSERT INTO okonta
+VALUES (13, (SELECT REF(kot) FROM oelita kot WHERE kot.nr_elity = 3), '2019-01-13', NULL);
+INSERT INTO okonta
+VALUES (14, (SELECT REF(kot) FROM oelita kot WHERE kot.nr_elity = 5), '2019-01-14', '2019-01-15');*/
+--</editor-fold>
+
+--</editor-fold>
+
+--</editor-fold>
+
+--<editor-fold desc="Zad 17">
+SELECT k.getDisplayName() "kot", k.zjadarazem() "spozycie", k.getnazwabandy() "banda"
+FROM okocury k
+WHERE k.GetTeren() IN ('POLE', 'CALOSC');
+--</editor-fold>
+
+--<editor-fold desc="Zad 23">
+SELECT k.getDisplayName() "kot", k.getSpozycie() "zjada rocznie"
+FROM okocury k
+WHERE k.maPremie()=1
+ORDER BY k.zjadaRazem() DESC;
+
 --</editor-fold>
 --</editor-fold>
+
